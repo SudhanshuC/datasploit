@@ -19,8 +19,22 @@ import urllib
 twitterex=0 #counter for identifying if twitter account is found
 
 def git_user_details(username):
+	email=[]
+	req = requests.get("https://api.github.com/users/%s/events/public" % (username))
+	req=json.loads(req.content)
+	for r in req:
+		try:
+			email.append(r['payload']['commits'][0]['author']['email'].encode('ascii', 'ignore'))
+		except:
+			pass
+	email=set(email)
+	email=list(email)
 	req = requests.get("https://api.github.com/users/%s" % (username))
-	return json.loads(req.content)
+	req=json.loads(req.content)
+	if email:
+		req.update({'Email(s) Associated to Repos':email})
+
+	return req
 
 def usernamesearch(username):
 	data = {"username":username}
@@ -288,6 +302,7 @@ try:
 	print "Bio: %s" % git_data['bio']
 	print "On GitHub: %s" % git_data['created_at']
 	print "Last Activity: %s" % git_data['updated_at']
+	print "Email(s) Associated to Repos: %s" % git_data['Email(s) Associated to Repos']
 	print "\n-----------------------------\n"
 except:
 	print 'Git account do not exist on this username.'
